@@ -1,0 +1,40 @@
+body {
+    padding-top: 40px;
+    padding-bottom: 40px;
+    background-color: #eee;
+}
+
+.form-all {
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+}
+
+.form-all .form-all-heading,
+.form-all .checkbox {
+    margin-bottom: 10px;
+}
+
+.form-all .checkbox {
+    font-weight: normal;
+}
+
+.form-all .form-control {
+    position: relative;
+    height: auto;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.form-all .form-control:focus {
+    z-index: 2;
+}
+
+.form-all input {
+    margin-bottom: 5px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
