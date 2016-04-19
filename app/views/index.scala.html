@@ -1,3 +1,5 @@
+@(userForm: Form[UserSignInData])(implicit messages: Messages)
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -7,19 +9,14 @@
     </head>
     <body>
         <div class="container">
-            <!--<span style="font-size:1.5em;" class="glyphicon glyphicon-trash"></span>-->
-            <form class="form-all">
-                <label for="inputUsername" class="sr-only">Username</label>
-                <input type="username" id="inputUsername" class="form-control" placeholder="Username" required autofocus>
-                <br/>
-                <label for="inputPassword" class="sr-only">Password</label>
-                <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-                <br/>
-                <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-                <div class="checkbox" style="text-align:center;">
-                    <a href="@routes.SignUpController.signUpGet()">New here? Create an account.</a>
-                </div>
-            </form>
+        @helper.form(action = routes.HomeController.signInPost(), 'class -> "form-all") {
+            @helper.inputText(userForm("username"), 'id -> "inputUsername", 'class -> "form-control", 'placeholder -> "Username", '_label -> "", '_showConstraints -> false)
+            @helper.inputText(userForm("passwords.main"), 'type -> "password", 'id -> "inputPassword", 'class -> "form-control", 'placeholder -> "Password", '_label -> "", '_showConstraints -> false)
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+            <div class="checkbox" style="text-align : center ;">
+                <a href="@routes.SignUpController.signUpGet()">New here? Create an account.</a>
+            </div>
+        }
         </div>
     </body>
 </html>
