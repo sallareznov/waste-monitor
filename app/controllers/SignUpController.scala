@@ -54,7 +54,7 @@ class SignUpController @Inject()(val messagesApi: MessagesApi) extends Controlle
         userData => {
           println(userData)
           // TODO add user to db
-          Redirect(routes.HomeController.index())
+          Redirect(routes.WebsiteHomeController.index())
         })
   }
 
