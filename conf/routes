@@ -1,8 +1,2 @@
-GET     /                   controllers.HomeController.index()
-POST    /                   controllers.HomeController.signInPost()
-
-GET     /signUp             controllers.SignUpController.signUpGet()
-POST    /signUp             controllers.SignUpController.signUpPost()
-
-GET     /favicon.ico        controllers.Assets.at(path="/public", file="images/favicon.ico")
-GET     /assets/*file       controllers.Assets.at(path="/public", file)
+->      /api        api.Routes
+->      /           website.Routes
