@@ -1,10 +1,8 @@
 package models
 
-import java.sql.Date
-
 import play.api.libs.json.Json
 
-case class Trash(id: Option[Long], userId: Long, volume: Int, dumpDate: Date)
+case class Trash(id: Option[Long], userId: Long, volume: Int, dumpFrequency: Int)
 
 object Trash {
 

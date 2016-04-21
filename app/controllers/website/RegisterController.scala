@@ -2,8 +2,7 @@ package controllers.website
 
 import javax.inject.Inject
 
-import com.github.t3hnar.bcrypt._
-import models.{User, UserRepository, UserSignUpData}
+import models.{UserRegisterData, UserRepository}
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -12,16 +11,16 @@ import play.api.mvc.{Action, Controller}
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
-  * Controller for the signing up process ({{{/signup}}})
+  * Controller for the registering process ({{{/signup}}})
   *
   * @param messagesApi the messages (within the i18n context)
   */
-class SignUpController @Inject()(usersRepository: UserRepository, val messagesApi: MessagesApi)(implicit ec: ExecutionContext) extends Controller with I18nSupport {
+class RegisterController @Inject()(usersRepository: UserRepository, val messagesApi: MessagesApi)(implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
   /**
-    * the form for the signing up process
+    * the form for the registering process
     */
-  val signUpForm = Form(
+  val registerForm = Form(
     mapping(
       "username" -> text(minLength = 3, maxLength = 20)
         .verifying("Username already exists", username => true)
@@ -31,7 +30,7 @@ class SignUpController @Inject()(usersRepository: UserRepository, val messagesAp
           .verifying("The accepted characters for the password are : letters and numbers.", _.matches("[a-zA-Z0-9]+")),
         "confirm" -> text
       ).verifying("Passwords must match", passwords => passwords._1 == passwords._2)
-    )(UserSignUpData.apply)(UserSignUpData.unapply)
+    )(UserRegisterData.apply)(UserRegisterData.unapply)
   )
 
   /**
@@ -39,8 +38,8 @@ class SignUpController @Inject()(usersRepository: UserRepository, val messagesAp
     *
     * @return renders the form enabling the user to sign up
     */
-  def signUpGet() = Action {
-    Ok(views.html.signup(signUpForm))
+  def registerGet() = Action {
+    Ok(views.html.register(registerForm))
   }
 
   /**
@@ -48,17 +47,22 @@ class SignUpController @Inject()(usersRepository: UserRepository, val messagesAp
     *
     * @return signs the user up if the form is valid, otherwise displays errors and re-sends the form
     */
-  def signUpPost() = Action.async {
+  def registerPost() = Action.async {
     implicit request =>
-      signUpForm.bindFromRequest.fold(
+      registerForm.bindFromRequest.fold(
         formWithErrors => {
-          Future.successful(BadRequest(views.html.signup(formWithErrors)))
+          Future.successful(BadRequest(views.html.register(formWithErrors)))
         },
         userData => {
           val username = userData.username
-          val hash = userData.passwords._1.bcrypt
-          usersRepository.add(User(None, username, hash)).map(_ => Redirect(routes.SignInController.index()))
+          usersRepository.getByUsername(username).map({
+            case None =>
+              usersRepository.add(username, userData.passwords._1)
+              Redirect(routes.LoginController.index())
+            case Some(_) => Conflict
+          })
         })
   }
+
 
 }

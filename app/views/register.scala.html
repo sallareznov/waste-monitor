@@ -1,4 +1,4 @@
-@(userForm: Form[UserSignUpData])(implicit messages: Messages)
+@(userForm: Form[UserRegisterData])(implicit messages: Messages)
 
 <!DOCTYPE html>
 <html>
@@ -7,11 +7,11 @@
         <link href="@routes.Assets.at("stylesheets/form-all.css")" rel="stylesheet">
     </head>
     <body>
-        @helper.form(action = website.routes.SignUpController.signUpPost(), 'class -> "form-all" ) {
+        @helper.form(action = website.routes.RegisterController.registerPost(), 'class -> "form-all" ) {
             @helper.inputText(userForm("username"), 'id -> "inputUsername", 'class -> "form-control", 'placeholder -> "Username", '_label -> "", '_showConstraints -> false)
             @helper.inputText(userForm("passwords.main"), 'type -> "password", 'id -> "inputPassword", 'class -> "form-control", 'placeholder -> "Password", '_label -> "", '_showConstraints -> false)
             @helper.inputText(userForm("passwords.confirm"), 'type -> "password", 'id -> "inputPasswordConfirmation", 'class -> "form-control", 'placeholder -> "Password confirmation", '_label -> "", '_showConstraints -> false)
-            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
         }
     </body>
 </html>

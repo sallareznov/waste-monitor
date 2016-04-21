@@ -7,6 +7,8 @@ import slick.driver.JdbcProfile
 
 import scala.concurrent.{ExecutionContext, Future}
 
+import com.github.t3hnar.bcrypt._
+
 @Singleton
 class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
 
@@ -16,19 +18,17 @@ class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implici
 
   class UserTable(tag: Tag) extends Table[User](tag, "USER") {
 
-    def id = column[Option[Long]]("id", O.PrimaryKey, O.AutoInc)
-    def username = column[String]("username")
-    def hash = column[String]("hash")
+    def id = column[Option[Long]]("ID", O.PrimaryKey, O.AutoInc)
+    def username = column[String]("USERNAME")
+    def hash = column[String]("HASH")
 
     override def * = (id, username, hash) <> ((User.apply _).tupled, User.unapply)
   }
 
   val users = TableQuery[UserTable]
 
-  def add(user: User): Future[String] = {
-    dbConfig.db.run(users += user).map(res => "User successfully added").recover {
-      case ex: Exception => ex.getCause.getMessage
-    }
+  def add(username: String, password: String) = {
+    dbConfig.db.run(users += User(None, username, password.bcrypt))
   }
 
   def getById(id: Long): Future[Option[User]] = {

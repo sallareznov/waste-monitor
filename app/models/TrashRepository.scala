@@ -1,6 +1,5 @@
 package models
 
-import java.sql.Date
 import javax.inject.{Inject, Singleton}
 
 import play.api.db.slick.DatabaseConfigProvider
@@ -15,14 +14,14 @@ class TrashRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
 
   import dbConfig.driver.api._
 
-  class TrashTable(tag: Tag) extends Table[Trash](tag, "trash") {
+  class TrashTable(tag: Tag) extends Table[Trash](tag, "TRASH") {
 
-    def id = column[Option[Long]]("id", O.PrimaryKey, O.AutoInc)
-    def userId = column[Long]("user_id")
-    def volume = column[Int]("volume")
-    def dumpDate = column[Date]("dump_date")
+    def id = column[Option[Long]]("ID", O.PrimaryKey, O.AutoInc)
+    def userId = column[Long]("USER_ID")
+    def volume = column[Int]("VOLUME")
+    def dumpFrequency = column[Int]("DUMP_FREQUENCY")
 
-    override def * = (id, userId, volume, dumpDate) <> ((Trash.apply _).tupled, Trash.unapply)
+    override def * = (id, userId, volume, dumpFrequency) <> ((Trash.apply _).tupled, Trash.unapply)
   }
 
   val trashes = TableQuery[TrashTable]
