@@ -7,7 +7,7 @@
         <link href="@routes.Assets.at("stylesheets/form-all.css")" rel="stylesheet">
     </head>
     <body>
-        @helper.form(action = routes.SignUpController.signUpPost(), 'class -> "form-all" ) {
+        @helper.form(action = website.routes.SignUpController.signUpPost(), 'class -> "form-all" ) {
             @helper.inputText(userForm("username"), 'id -> "inputUsername", 'class -> "form-control", 'placeholder -> "Username", '_label -> "", '_showConstraints -> false)
             @helper.inputText(userForm("passwords.main"), 'type -> "password", 'id -> "inputPassword", 'class -> "form-control", 'placeholder -> "Password", '_label -> "", '_showConstraints -> false)
             @helper.inputText(userForm("passwords.confirm"), 'type -> "password", 'id -> "inputPasswordConfirmation", 'class -> "form-control", 'placeholder -> "Password confirmation", '_label -> "", '_showConstraints -> false)
