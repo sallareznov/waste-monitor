@@ -9,9 +9,16 @@
     </head>
     <body>
         <div class="container">
-        @helper.form(action = routes.WebsiteHomeController.signInPost(), 'class -> "form-all") {
+            @if(userForm.hasGlobalErrors) {
+                <ul>
+                @for(error <- userForm.globalErrors) {
+                    <li>@error.message</li>
+                }
+                </ul>
+            }
+        @helper.form(action = routes.SignInController.signInPost(), 'class -> "form-all") {
             @helper.inputText(userForm("username"), 'id -> "inputUsername", 'class -> "form-control", 'placeholder -> "Username", '_label -> "", '_showConstraints -> false)
-            @helper.inputText(userForm("passwords.main"), 'type -> "password", 'id -> "inputPassword", 'class -> "form-control", 'placeholder -> "Password", '_label -> "", '_showConstraints -> false)
+            @helper.inputText(userForm("password"), 'type -> "password", 'id -> "inputPassword", 'class -> "form-control", 'placeholder -> "Password", '_label -> "", '_showConstraints -> false)
             <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
             <div class="checkbox" style="text-align : center ;">
                 <a href="@routes.SignUpController.signUpGet()">New here? Create an account.</a>

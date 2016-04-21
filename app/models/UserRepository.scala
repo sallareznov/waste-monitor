@@ -8,7 +8,7 @@ import slick.driver.JdbcProfile
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class UsersRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
+class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
@@ -16,11 +16,11 @@ class UsersRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
 
   class UserTable(tag: Tag) extends Table[User](tag, "USER") {
 
-    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+    def id = column[Option[Long]]("id", O.PrimaryKey, O.AutoInc)
     def username = column[String]("username")
-    def password = column[String]("password")
+    def hash = column[String]("hash")
 
-    override def * = (id, username, password) <> ((User.apply _).tupled, User.unapply)
+    override def * = (id, username, hash) <> ((User.apply _).tupled, User.unapply)
   }
 
   val users = TableQuery[UserTable]
@@ -31,8 +31,12 @@ class UsersRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
     }
   }
 
-  def get(id: Long): Future[Option[User]] = {
+  def getById(id: Long): Future[Option[User]] = {
     dbConfig.db.run(users.filter(_.id === id).result.headOption)
+  }
+
+  def getByUsername(username: String): Future[Option[User]] = {
+    dbConfig.db.run(users.filter(_.username === username).result.headOption)
   }
 
   def listAll(): Future[Seq[User]] = {
