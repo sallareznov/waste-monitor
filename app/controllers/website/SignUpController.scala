@@ -1,19 +1,22 @@
-package controllers
+package controllers.website
 
 import javax.inject.Inject
 
-import models.UserSignUpData
+import com.github.t3hnar.bcrypt._
+import models.{User, UserRepository, UserSignUpData}
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, Controller}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Controller for the signing up process ({{{/signup}}})
   *
   * @param messagesApi the messages (within the i18n context)
   */
-class SignUpController @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class SignUpController @Inject()(usersRepository: UserRepository, val messagesApi: MessagesApi)(implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
   /**
     * the form for the signing up process
@@ -45,16 +48,16 @@ class SignUpController @Inject()(val messagesApi: MessagesApi) extends Controlle
     *
     * @return signs the user up if the form is valid, otherwise displays errors and re-sends the form
     */
-  def signUpPost() = Action {
+  def signUpPost() = Action.async {
     implicit request =>
       signUpForm.bindFromRequest.fold(
         formWithErrors => {
-          BadRequest(views.html.signup(formWithErrors))
+          Future.successful(BadRequest(views.html.signup(formWithErrors)))
         },
         userData => {
-          println(userData)
-          // TODO add user to db
-          Redirect(routes.WebsiteHomeController.index())
+          val username = userData.username
+          val hash = userData.passwords._1.bcrypt
+          usersRepository.add(User(None, username, hash)).map(_ => Redirect(routes.SignInController.index()))
         })
   }
 

@@ -1,1 +1,1 @@
-GET     /users      controllers.ApiHomeController.listUsers()
+GET     /users      controllers.api.ApiHomeController.listUsers()
