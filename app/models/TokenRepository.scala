@@ -7,7 +7,7 @@ import org.apache.commons.codec.binary.Base64
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TokenRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
@@ -29,7 +29,7 @@ class TokenRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
 
   def addToken(username: String, password: String) = {
     val token = Base64.encodeBase64String((username + ':' + password).getBytes)
-    dbConfig.db.run(tokens += Token(token, username, None))
+    dbConfig.db.run(tokens.map(token => (token.text, token.username)).insertOrUpdate(token, username))
   }
 
   def getToken(tokenText: String): Future[Option[Token]] = {
