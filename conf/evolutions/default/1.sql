@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS "TOKEN"
 (
     "TEXT" VARCHAR(100) NOT NULL UNIQUE, -- the text of the token
     "USERNAME" VARCHAR(30) NOT NULL UNIQUE, -- the username that generated the token
-    "EXPIRATION_DELAY" TIMESTAMP DEFAULT (now() + 10 * INTERVAL '1 minute'), -- the expiration delay (in minutes)
+    "EXPIRATION_DELAY" TIMESTAMP NOT NULL DEFAULT (now() + 10 * INTERVAL '1 minute'), -- the expiration delay (in minutes)
     PRIMARY KEY("USERNAME")
 );
 
