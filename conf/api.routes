@@ -1,6 +1,4 @@
 POST        /login                          controllers.api.ApiHomeController.login()
 POST        /register/:credentials          controllers.api.ApiHomeController.register(credentials)
-
 GET         /user                           controllers.api.ApiHomeController.currentUser()
-
 GET         /users                          controllers.api.ApiHomeController.listUsers()
