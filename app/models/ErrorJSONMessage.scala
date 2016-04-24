@@ -2,7 +2,7 @@ package models
 
 import play.api.libs.json.Json
 
-case class ErrorJSONMessage(message: String, documentation: String = "https://github.com/sallareznov/waste-monitor")
+case class ErrorJSONMessage(message: String, documentation: Array[String] = Array("https://github.com/sallareznov/waste-monitor", "/api"))
 
 object ErrorJSONMessage {
 

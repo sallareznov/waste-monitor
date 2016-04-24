@@ -57,7 +57,7 @@ class RegisterController @Inject()(usersRepository: UserRepository, val messages
           val username = userData.username
           usersRepository.getByUsername(username).map({
             case None =>
-              usersRepository.add(username, userData.passwords._1)
+              usersRepository.createUser(username, userData.passwords._1)
               Redirect(routes.LoginController.index())
             case Some(_) => Conflict
           })

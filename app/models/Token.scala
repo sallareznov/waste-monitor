@@ -4,7 +4,7 @@ import java.sql.Date
 
 import play.api.libs.json.Json
 
-case class Token(text: String, username: String, expirationDelay: Option[Date])
+case class Token(text: String, userId: Long, expirationDelay: Option[Date])
 
 object Token {
 

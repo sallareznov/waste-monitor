@@ -27,16 +27,21 @@ class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implici
 
   val users = TableQuery[UserTable]
 
-  def add(username: String, password: String) = {
-    dbConfig.db.run(users += User(None, username, password.bcrypt))
+  def createUser(username: String, password: String): Future[Option[Long]] = {
+    val entity = User(None, username, password.bcrypt)
+    dbConfig.db.run(users returning users.map(_.id) += entity)
   }
 
-  def getById(id: Long): Future[Option[User]] = {
-    dbConfig.db.run(users.filter(_.id === id).result.headOption)
+  def getById(userId: Long): Future[Option[User]] = {
+    dbConfig.db.run(users.filter(_.id === userId).result.headOption)
   }
 
   def getByUsername(username: String): Future[Option[User]] = {
     dbConfig.db.run(users.filter(_.username === username).result.headOption)
+  }
+
+  def getByUsernameAndPassword(username: String, password: String): Future[Option[User]] = {
+    dbConfig.db.run(users.filter(user => user.username === username && user.hash === password.bcrypt).result.headOption)
   }
 
   def listAll(): Future[Seq[User]] = {

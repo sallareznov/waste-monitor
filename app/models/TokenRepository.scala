@@ -19,25 +19,30 @@ class TokenRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
   class TokenTable(tag: Tag) extends Table[Token](tag, "TOKEN") {
 
     def text = column[String]("TEXT")
-    def username = column[String]("USERNAME", O.PrimaryKey)
+    def userId = column[Long]("USER_ID")
     def expirationDelay = column[Option[Date]]("EXPIRATION_DELAY")
 
-    override def * = (text, username, expirationDelay) <> ((Token.apply _).tupled, Token.unapply)
+    override def * = (text, userId, expirationDelay) <> ((Token.apply _).tupled, Token.unapply)
   }
 
   val tokens = TableQuery[TokenTable]
 
-  def addToken(username: String, password: String) = {
-    val token = Base64.encodeBase64String((username + ':' + password).getBytes)
-    dbConfig.db.run(tokens.map(token => (token.text, token.username)).insertOrUpdate(token, username))
+  def addToken(userId: Long, username: String, password: String): Future[Token] = {
+    val tokenText = Base64.encodeBase64String((username + ':' + password).getBytes)
+    dbConfig.db.run {
+      (tokens.map(token => (token.text, token.userId))
+      returning tokens.map(_.expirationDelay)
+        into((params, expirationDelay) => Token(params._1, params._2, expirationDelay))
+        ) += (tokenText, userId)
+    }
   }
 
   def getToken(tokenText: String): Future[Option[Token]] = {
     dbConfig.db.run(tokens.filter(_.text === tokenText).result.headOption)
   }
 
-  def getTokenForUsername(username: String): Future[Option[Token]] = {
-    dbConfig.db.run(tokens.filter(_.username === username).result.headOption)
+  def getTokenForUserId(userId: Long): Future[Option[Token]] = {
+    dbConfig.db.run(tokens.filter(_.userId === userId).result.headOption)
   }
 
 }
