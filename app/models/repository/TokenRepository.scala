@@ -1,8 +1,8 @@
-package models
+package models.repository
 
 import java.sql.Date
 import javax.inject.{Inject, Singleton}
-
+import models.entity.Token
 import org.apache.commons.codec.binary.Base64
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
@@ -21,8 +21,8 @@ class TokenRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
     def text = column[String]("TEXT")
     def userId = column[Long]("USER_ID")
     def expirationDelay = column[Option[Date]]("EXPIRATION_DELAY")
-
     override def * = (text, userId, expirationDelay) <> ((Token.apply _).tupled, Token.unapply)
+
   }
 
   val tokens = TableQuery[TokenTable]

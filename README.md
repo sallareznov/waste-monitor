@@ -12,8 +12,9 @@ Waste Monitor is an application enabling the user to monitor the evolution of hi
 
 | Route | Verb | Headers | URL Parameters | Body | Description |
 | ----- | ---- | ------- | -------------- | ---- | ----------- |
-| ```/api/login``` | POST | None | None | ```{ "username" : "john", "password" : "john" }``` | Attempts to log the user |
-| ```/api/register``` | POST | None | None | ```{ "username" : "john", "password" : "john" }``` | Attempts to register a new user |
+| ```/api``` | GET | None | None | None | Displays documentation about all the entry points |
+| ```/api/register``` | POST | None | None | ```{ "username" : "sallareznov", "password" : "sallareznov" }``` | Attempts to register a new user |
+| ```/api/login``` | POST | None | None | ```{ "username" : "sallareznov", "password" : "sallareznov" }``` | Attempts to log the user |
 | ```/api/users``` | GET | None | None | None | Lists the registered users |
 | ```/api/user``` | GET | ```Authorization: Basic <access_token>``` | None | None | Shows informations about the authenticated user (his username, the number of trashes he owns and the total waste volume that are in his trashes) |
 | ```/api/user/trashes``` | GET | ```Authorization: Basic <access_token>``` | None | None | Shows informations about the trashes owned by the authenticated user |

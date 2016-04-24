@@ -1,8 +1,8 @@
 package controllers.website
 
 import javax.inject.Inject
-
-import models.{UserRegisterData, UserRepository}
+import models.form.UserRegisterData
+import models.repository.UserRepository
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, MessagesApi}

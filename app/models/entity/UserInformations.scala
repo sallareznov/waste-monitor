@@ -1,8 +1,8 @@
-package models
+package models.entity
 
 import play.api.libs.json.Json
 
-case class UserInformations(username: String, nbTrashes: Int, totalWasteVolume: Int)
+case class UserInformations(username: String, token: String, nbTrashes: Int, totalWasteVolume: Int)
 
 object UserInformations {
 

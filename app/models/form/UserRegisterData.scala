@@ -1,4 +1,4 @@
-package models
+package models.form
 
 /**
   * Informations the user has to fill in order to sign up

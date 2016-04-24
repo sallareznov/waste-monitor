@@ -1,4 +1,4 @@
-import models.ErrorJSONMessage
+import models.entity.ErrorJSONMessage
 import play.api.http.HttpErrorHandler
 import play.api.libs.json.Json
 import play.api.mvc._

@@ -1,13 +1,13 @@
-package models
+package models.repository
 
 import javax.inject.{Inject, Singleton}
 
+import com.github.t3hnar.bcrypt._
+import models.entity.User
 import play.api.db.slick.DatabaseConfigProvider
 import slick.driver.JdbcProfile
 
 import scala.concurrent.{ExecutionContext, Future}
-
-import com.github.t3hnar.bcrypt._
 
 @Singleton
 class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
@@ -21,8 +21,8 @@ class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implici
     def id = column[Option[Long]]("ID", O.PrimaryKey, O.AutoInc)
     def username = column[String]("USERNAME")
     def hash = column[String]("HASH")
-
     override def * = (id, username, hash) <> ((User.apply _).tupled, User.unapply)
+
   }
 
   val users = TableQuery[UserTable]

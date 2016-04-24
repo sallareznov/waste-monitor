@@ -3,7 +3,8 @@ package controllers.website
 import javax.inject.Inject
 
 import com.github.t3hnar.bcrypt._
-import models.{TokenRepository, UserRepository, UserLoginData}
+import models.form.UserLoginData
+import models.repository.{UserRepository, TokenRepository}
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, MessagesApi}

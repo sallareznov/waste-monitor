@@ -2,41 +2,27 @@ package controllers.api
 
 import javax.inject.Inject
 
-import models._
+import models.entity.{ErrorJSONMessage, RouteInformations, UserInformations}
+import models.repository.{TokenRepository, TrashRepository, UserRepository, WasteVolumeRepository}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ApiHomeController @Inject()(usersRepository: UserRepository, tokenRepository: TokenRepository, trashRepository: TrashRepository, val messagesApi: MessagesApi)(implicit ec: ExecutionContext) extends Controller with I18nSupport {
+class ApiHomeController @Inject()(userRepository: UserRepository, tokenRepository: TokenRepository, trashRepository: TrashRepository, wasteVolumeRepository: WasteVolumeRepository, val messagesApi: MessagesApi)(implicit ec: ExecutionContext) extends Controller with I18nSupport {
 
   def index() = Action {
-    Ok(Json.toJson(List(RouteInformations("Attempts to log the user", "/api/login", "POST", None, None, Some(Json.obj("username" -> "john", "password" -> "john"))),
-      RouteInformations("Attempts to register a new user", "/api/register", "POST", None, None, Some(Json.obj("username" -> "john", "password" -> "john"))),
+    Ok(Json.toJson(List(RouteInformations("Attempts to log the user", "/api/login", "POST", None, None, Some(Json.obj("username" -> "sallareznov", "password" -> "sallareznov"))),
+      RouteInformations("Attempts to register a new user", "/api/register", "POST", None, None, Some(Json.obj("username" -> "sallareznov", "password" -> "sallareznov"))),
       RouteInformations("Lists the registered users", "/api/users", "GET", None, None, None),
       RouteInformations("Shows informations about the authenticated user (his username, the number of trashes he owns and the total waste volume that are in his trashes)", "/api/user", "GET", Some("Authorization: Basic <access_token>"), None, None),
       RouteInformations("Shows informations about the trashes owned by the authenticated user", "/api/user/trashes", "GET", Some("Authorization: Basic <access_token>"), None, None),
       RouteInformations("Creates a new trash for the authenticated user", "/api/user/createTrash", "PUT", Some("Authorization: Basic <access_token>"), None, Some(Json.obj("volume" -> 5, "dumpFrequency" -> 10))),
       RouteInformations("Deletes the specified trash owned by the authenticated user", "/api/user/deleteTrash", "DELETE", Some("Authorization: Basic <access_token>"), Some(Json.obj("trashId" -> "the identifier of the trash")), None),
       RouteInformations("Shows informations about the selected trash owned by the authenticated user", "/api/user/trash", "GET", Some("Authorization: Basic <access_token>"), Some(Json.obj("trashId" -> "the identifier of the trash")), None),
-      RouteInformations("Shows informations about the evolution of the authenticated user's waste", "/api/user/monitor", "GET", Some("Authorization: Basic <access_token>"), None, None)
+      RouteInformations("Shows informations about the evolution of the authenticated user's waste", "/api/user/evolution", "GET", Some("Authorization: Basic <access_token>"), None, None)
     )))
-  }
-
-  def listUsers() = Action.async {
-    usersRepository.listAll().map(users => Ok(Json.toJson(users)))
-  }
-
-  def login() = Action.async(parse.json) {
-    implicit request =>
-      val requestBody = request.body
-      val username = (requestBody \ "username").as[String]
-      val password = (requestBody \ "password").as[String]
-      usersRepository.getByUsernameAndPassword(username, password).map {
-        case Some(user) => Ok(Json.toJson(user))
-        case None => Unauthorized(Json.toJson(ErrorJSONMessage("Bad credentials")))
-      }
   }
 
   def register() = Action.async(parse.json) {
@@ -44,14 +30,36 @@ class ApiHomeController @Inject()(usersRepository: UserRepository, tokenReposito
       val requestBody = request.body
       val username = (requestBody \ "username").as[String]
       val password = (requestBody \ "password").as[String]
-      usersRepository.getByUsername(username).flatMap {
+      userRepository.getByUsername(username).flatMap {
         case None =>
-          usersRepository.createUser(username, password).flatMap {
+          userRepository.createUser(username, password).flatMap {
             case Some(userId) => tokenRepository.addToken(userId, username, password).map(newToken => Ok(Json.toJson(newToken)))
             case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
           }
         case _ => Future.successful(Conflict(Json.toJson(ErrorJSONMessage("You are already registered"))))
       }
+  }
+
+  def login() = Action.async(parse.json) {
+    implicit request =>
+      val requestBody = request.body
+      val username = (requestBody \ "username").as[String]
+      val password = (requestBody \ "password").as[String]
+      userRepository.getByUsernameAndPassword(username, password).flatMap {
+        case Some(user) => user.id match {
+          case Some(userId) =>
+            tokenRepository.getTokenForUserId(userId).flatMap {
+              case Some(_) => tokenRepository.getTokenForUserId(userId).map(token => Ok(Json.toJson(token)))
+              case None => tokenRepository.addToken(userId, username, password).map(newToken => Ok(Json.toJson(newToken)))
+            }
+          case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
+        }
+        case None => Future.successful(Unauthorized(Json.toJson(ErrorJSONMessage("Bad credentials"))))
+      }
+  }
+
+  def listUsers() = Action.async {
+    userRepository.listAll().map(users => Ok(Json.toJson(users)))
   }
 
   def currentUser() = Action.async {
@@ -62,21 +70,25 @@ class ApiHomeController @Inject()(usersRepository: UserRepository, tokenReposito
           tokenTextOption match {
             case None => Future.successful(BadRequest(Json.toJson(ErrorJSONMessage("Bad request"))))
             case Some(tokenText) =>
-              tokenRepository.getToken(tokenText).map({
-                case Some(result) => Ok
-                case None => Unauthorized(Json.toJson(ErrorJSONMessage("Bad credentials")))
-              })
+              tokenRepository.getToken(tokenText).flatMap {
+                case Some(token) =>
+                  userRepository.getById(token.userId).flatMap {
+                    case Some(user) => trashRepository.getNbTrashesForUserId(token.userId).map(trashes => {
+                      val totalWasteVolume = trashes.foldLeft(0)((r, c) => r + c.volume)
+                      Ok(Json.toJson(UserInformations(user.username, token.text, trashes.length, totalWasteVolume)))
+                    })
+                    case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
+                  }
+                case None => Future.successful(Unauthorized(Json.toJson(ErrorJSONMessage("Bad credentials"))))
+              }
           }
         case None => Future.successful(Unauthorized(Json.toJson(ErrorJSONMessage("Requires authentication"))))
       }
     }
   }
 
-  def createTrash() = Action.async(parse.json) {
+  def createTrash(trashVolume: Int) = Action.async {
     implicit request =>
-      val requestBody = request.body
-      val trashVolume = (requestBody \ "volume").as[Int]
-      val trashDumpFrequency = (requestBody \ "dumpFrequency").as[Int]
       request.headers.get("Authorization") match {
         case Some(authorizationHeader) =>
           val tokenTextOption = authorizationHeader.split(" ").lastOption
@@ -84,13 +96,18 @@ class ApiHomeController @Inject()(usersRepository: UserRepository, tokenReposito
             case None => Future.successful(BadRequest(Json.toJson(ErrorJSONMessage("Bad request"))))
             case Some(tokenText) =>
               tokenRepository.getToken(tokenText).flatMap({
-                case Some(token) => trashRepository.createTrash(token.userId, trashVolume, trashDumpFrequency).map(trash => Ok(Json.toJson(trash)))
+                case Some(token) => trashRepository.createTrash(token.userId, trashVolume).flatMap(
+                  trash => trashRepository.getWasteVolume(trash.userId).flatMap {
+                    case Some(wasteVolume) => wasteVolumeRepository.record(trash.userId, wasteVolume).map(_ => Ok(Json.toJson(trash)))
+                    case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
+                  })
                 case None => Future.successful(Unauthorized(Json.toJson(ErrorJSONMessage("Bad credentials"))))
               })
           }
         case None => Future.successful(Unauthorized(Json.toJson(ErrorJSONMessage("Requires authentication"))))
       }
   }
+
 
   def listTrashes() = Action.async {
     implicit request =>
@@ -126,6 +143,35 @@ class ApiHomeController @Inject()(usersRepository: UserRepository, tokenReposito
       }
   }
 
+  def changeEmptiness(trashId: Long, empty: Boolean) = Action.async {
+    implicit request =>
+      request.headers.get("Authorization") match {
+        case Some(authorizationHeader) =>
+          val tokenTextOption = authorizationHeader.split(" ").lastOption
+          tokenTextOption match {
+            case None => Future.successful(BadRequest(Json.toJson(ErrorJSONMessage("Bad request"))))
+            case Some(tokenText) =>
+              tokenRepository.getToken(tokenText).flatMap({
+                case Some(token) => trashRepository.getTrash(trashId).flatMap {
+                  case Some(trash) =>
+                    trash.empty match {
+                      case x if x == !empty => trashRepository.changeEmptiness(trashId, empty).flatMap {
+                        _ => trashRepository.getWasteVolume(trash.userId).flatMap {
+                          case Some(wasteVolume) => wasteVolumeRepository.record(trashId, wasteVolume).flatMap(_ => trashRepository.getTrash(trashId).map(updatedTrash => Ok(Json.toJson(updatedTrash))))
+                          case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
+                        }
+                      }
+                      case true => Future.successful(Conflict(Json.toJson(ErrorJSONMessage("This trash is already empty"))))
+                    }
+                  case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
+                }
+                case None => Future.successful(Unauthorized(Json.toJson(ErrorJSONMessage("Bad credentials"))))
+              })
+          }
+        case None => Future.successful(Unauthorized(Json.toJson(ErrorJSONMessage("Requires authentication"))))
+      }
+  }
+
   def deleteTrash(trashId: Long) = Action.async {
     implicit request =>
       request.headers.get("Authorization") match {
@@ -143,6 +189,21 @@ class ApiHomeController @Inject()(usersRepository: UserRepository, tokenReposito
       }
   }
 
-  def evolution() = TODO
+  def evolution() = Action.async {
+    implicit request =>
+      request.headers.get("Authorization") match {
+        case Some(authorizationHeader) =>
+          val tokenTextOption = authorizationHeader.split(" ").lastOption
+          tokenTextOption match {
+            case None => Future.successful(BadRequest(Json.toJson(ErrorJSONMessage("Bad request"))))
+            case Some(tokenText) =>
+              tokenRepository.getToken(tokenText).flatMap({
+                case Some(token) => wasteVolumeRepository.getWasteVolumesFromUser(token.userId).map(wasteVolumes => Ok(Json.toJson(wasteVolumes)))
+                case None => Future.successful(Unauthorized(Json.toJson(ErrorJSONMessage("Bad credentials"))))
+              })
+          }
+        case None => Future.successful(Unauthorized(Json.toJson(ErrorJSONMessage("Requires authentication"))))
+      }
+  }
 
 }
