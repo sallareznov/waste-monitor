@@ -20,7 +20,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     */
   def index() = Action {
     Ok(Json.toJson(List(RouteInformations("Attempts to register a new user", "/api/register", "PUT", "None", Json.toJson("None"), Json.toJson("None"), Json.obj("username" -> "johndoe", "password" -> "johndoe"), Json.toJson(List("201 (Created) if the operation proceeded successfully and the user was created", "409 (Conflict) if a user with the same username already exists", "500 (Internal Server Error) if an error occurred on the server"))),
-      RouteInformations("Attempts to log the user", "/api/login", "POST", "None", Json.toJson("None"), Json.toJson("None"), Json.obj("username" -> "johndoe", "password" -> "johndoe"), Json.toJson(List("200 (OK) if the operation proceeded successfully", "401 (Unauthorized) if the credentials are invalid", "500 (Internal Server Error) if an error occurred on the server"))),
+      RouteInformations("Attempts to log a user", "/api/login", "POST", "None", Json.toJson("None"), Json.toJson("None"), Json.obj("username" -> "johndoe", "password" -> "johndoe"), Json.toJson(List("200 (OK) if the operation proceeded successfully", "401 (Unauthorized) if the credentials are invalid", "500 (Internal Server Error) if an error occurred on the server"))),
       RouteInformations("Lists the registered users", "/api/users", "GET", "None", Json.toJson("None"), Json.toJson("None"), Json.toJson("None"), Json.toJson(List("200 (OK) if the operation proceeded successfully", "500 (Internal Server Error) if an error occurred on the server"))),
       RouteInformations("Shows informations about the authenticated user (his username, the number of trashes he owns and the total waste volume that are in his trashes)", "/api/user", "GET", "Authorization: Basic <access_token>", Json.toJson("None"), Json.toJson("None"), Json.toJson("None"), Json.toJson(List("200 (OK) if the operation proceeded successfully", "400 (Bad Request) if the authentication token wasn't provided", "403 (Forbidden) if the authentication token is invalid or has expired", "500 (Internal Server Error) if an error occurred on the server"))),
       RouteInformations("Shows informations about the trashes owned by the authenticated user", "/api/user/trashes", "GET", "Authorization: Basic <access_token>", Json.toJson("None"), Json.toJson("None"), Json.toJson("None"), Json.toJson(List("200 (OK) if the operation proceeded successfully", "400 (Bad Request) if the authentication token wasn't provided", "403 (Forbidden) if the authentication token is invalid or has expired", "500 (Internal Server Error) if an error occurred on the server"))),
@@ -48,7 +48,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
       userRepository.getByUsername(username).flatMap {
         case None =>
           userRepository.createUser(username, password).flatMap {
-            case Some(userId) => tokenRepository.addToken(userId, username, password).map(newToken => Ok(Json.toJson(newToken)))
+            case Some(userId) => tokenRepository.addToken(userId, username, password).map(newToken => Created(Json.toJson(newToken)))
             case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
           }
         case _ => Future.successful(Conflict(Json.toJson(ErrorJSONMessage("You are already registered"))))
@@ -164,7 +164,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
               tokenRepository.getToken(tokenText).flatMap({
                 case Some(token) => trashRepository.createTrash(token.userId, trashVolume).flatMap(
                   trash => trashRepository.getTotalWasteVolume(trash.userId).flatMap {
-                    case Some(wasteVolume) => wasteVolumeRepository.record(trash.userId, wasteVolume).map(_ => Ok(Json.toJson(trash)))
+                    case Some(wasteVolume) => wasteVolumeRepository.record(trash.userId, wasteVolume).map(_ => Created(Json.toJson(trash)))
                     case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
                   })
                 case None => Future.successful(Forbidden(Json.toJson(ErrorJSONMessage("Bad credentials"))))
