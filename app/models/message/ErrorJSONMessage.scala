@@ -1,7 +1,12 @@
-package models.entity
+package models.message
 
 import play.api.libs.json.Json
 
+/**
+  * A JSON error message
+  * @param message the message
+  * @param documentation the documentation (links)
+  */
 case class ErrorJSONMessage(message: String, documentation: Array[String] = Array("https://github.com/sallareznov/waste-monitor", "/api"))
 
 object ErrorJSONMessage {

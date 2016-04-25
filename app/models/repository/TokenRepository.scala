@@ -9,6 +9,11 @@ import slick.driver.JdbcProfile
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+  * Repository for the TOKEN table
+  * @param dbConfigProvider the config provider
+  * @param ec the execution context
+  */
 @Singleton
 class TokenRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
 
@@ -16,6 +21,10 @@ class TokenRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
 
   import dbConfig.driver.api._
 
+  /**
+    * The TOKEN table entity
+    * @param tag the tag of the table
+    */
   class TokenTable(tag: Tag) extends Table[Token](tag, "TOKEN") {
 
     def text = column[String]("TEXT")
@@ -27,6 +36,13 @@ class TokenRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
 
   val tokens = TableQuery[TokenTable]
 
+  /**
+    * Inserts a token
+    * @param userId the id of the user
+    * @param username the username
+    * @param password the password
+    * @return the inserted token encapsulated in a [[Future]] object
+    */
   def addToken(userId: Long, username: String, password: String): Future[Token] = {
     val tokenText = Base64.encodeBase64String((username + ':' + password).getBytes)
     dbConfig.db.run {
@@ -37,10 +53,20 @@ class TokenRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
     }
   }
 
+  /**
+    * Retrieves a token by its text
+    * @param tokenText the text of the token
+    * @return the token option encapsulated in a [[Future]] object
+    */
   def getToken(tokenText: String): Future[Option[Token]] = {
     dbConfig.db.run(tokens.filter(_.text === tokenText).result.headOption)
   }
 
+  /**
+    * Retrieves a token by the id of its user
+    * @param userId the id of the user
+    * @return the token option encapsulated in a [[Future]] object
+    */
   def getTokenForUserId(userId: Long): Future[Option[Token]] = {
     dbConfig.db.run(tokens.filter(_.userId === userId).result.headOption)
   }

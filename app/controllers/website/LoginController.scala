@@ -23,14 +23,16 @@ class LoginController @Inject()(usersRepository: UserRepository, tokenRepository
   )
 
   /**
-    * {{{GET /}}}
-    *
+    * Entry point of the website
     * @return renders the home page, enabling the user to log in, or to create an account
     */
   def index() = Action {
     Ok(views.html.index(signInForm))
   }
 
+  /**
+    * @return attempt to log in a user
+    */
   def loginPost() = Action.async {
     implicit request =>
       signInForm.bindFromRequest.fold(

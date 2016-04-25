@@ -1,4 +1,4 @@
-import models.entity.ErrorJSONMessage
+import models.message.ErrorJSONMessage
 import play.api.http.HttpErrorHandler
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -7,6 +7,9 @@ import play.api.mvc.Results._
 import scala.concurrent.Future
 
 
+/**
+  * Custom error handler
+  */
 class ErrorHandler extends HttpErrorHandler {
 
   def onServerError(request: RequestHeader, exception: Throwable) = {
