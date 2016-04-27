@@ -2,7 +2,8 @@ package controllers.api
 
 import javax.inject.Inject
 
-import models.entity.Token
+import models.entity.{Token, User}
+import models.form.UserValidationData
 import models.message.{ErrorJSONMessage, RouteInformations, UserInformations}
 import models.repository.{TokenRepository, TrashRepository, UserRepository, WasteVolumeRepository}
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -34,6 +35,12 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     )))
   }
 
+  /**
+    * An action with the necessity to be authenticated
+    *
+    * @param futureResult the future result if the authentication token is valid
+    * @return
+    */
   def actionWithAuthorization(futureResult: (Token, Request[AnyContent]) => Future[Result]) = Action.async {
     implicit request =>
       request.headers.get("Authorization") match {
@@ -82,9 +89,9 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     */
   def login() = Action.async(parse.json) {
     implicit request =>
-      val requestBody = request.body
-      val username = (requestBody \ "username").as[String]
-      val password = (requestBody \ "password").as[String]
+      //val userResult = request.body.validate[UserValidationData]
+      val username = (request.body \ "username").as[String]
+      val password = (request.body \ "password").as[String]
       userRepository.getByUsernameAndPassword(username, password).flatMap {
         case Some(user) => user.id match {
           case Some(userId) =>

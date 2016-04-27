@@ -3,7 +3,7 @@ package controllers.website
 import javax.inject.Inject
 
 import com.github.t3hnar.bcrypt._
-import models.form.UserLoginData
+import models.form.UserValidationData
 import models.repository.{UserRepository, TokenRepository}
 import play.api.data.Form
 import play.api.data.Forms._
@@ -18,12 +18,13 @@ class LoginController @Inject()(usersRepository: UserRepository, tokenRepository
     mapping(
       "username" -> text,
       "password" -> text
-    )(UserLoginData.apply)(UserLoginData.unapply)
+    )(UserValidationData.apply)(UserValidationData.unapply)
     //.verifying("Invalid credentials", data => true)
   )
 
   /**
     * Entry point of the website
+ *
     * @return renders the home page, enabling the user to log in, or to create an account
     */
   def index() = Action {
