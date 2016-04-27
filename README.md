@@ -15,7 +15,7 @@ Waste Monitor is a RESTful web service enabling the user to monitor the evolutio
   {
     "description": "Attempts to register a new user",
     "route": "/api/register",
-    "verb": "PUT",
+    "verb": "POST",
     "headers": "None",
     "urlParameters": "None",
     "queryParameters": "None",

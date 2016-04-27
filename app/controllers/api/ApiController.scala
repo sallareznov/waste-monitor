@@ -2,8 +2,7 @@ package controllers.api
 
 import javax.inject.Inject
 
-import models.entity.{Token, User}
-import models.form.UserValidationData
+import models.entity.Token
 import models.message.{ErrorJSONMessage, RouteInformations, UserInformations}
 import models.repository.{TokenRepository, TrashRepository, UserRepository, WasteVolumeRepository}
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -21,7 +20,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         500 (Internal Server Error) if an error occurred on the server
     */
   def index() = Action {
-    Ok(Json.toJson(List(RouteInformations("Attempts to register a new user", "/api/register", "PUT", "None", Json.toJson("None"), Json.toJson("None"), Json.obj("username" -> "johndoe", "password" -> "johndoe"), Json.toJson(List("201 (Created) if the operation proceeded successfully and the user was created", "409 (Conflict) if a user with the same username already exists", "500 (Internal Server Error) if an error occurred on the server"))),
+    Ok(Json.toJson(List(RouteInformations("Attempts to register a new user", "/api/register", "POST", "None", Json.toJson("None"), Json.toJson("None"), Json.obj("username" -> "johndoe", "password" -> "johndoe"), Json.toJson(List("201 (Created) if the operation proceeded successfully and the user was created", "409 (Conflict) if a user with the same username already exists", "500 (Internal Server Error) if an error occurred on the server"))),
       RouteInformations("Attempts to log a user", "/api/login", "POST", "None", Json.toJson("None"), Json.toJson("None"), Json.obj("username" -> "johndoe", "password" -> "johndoe"), Json.toJson(List("200 (OK) if the operation proceeded successfully", "401 (Unauthorized) if the credentials are invalid", "500 (Internal Server Error) if an error occurred on the server"))),
       RouteInformations("Lists the registered users", "/api/users", "GET", "None", Json.toJson("None"), Json.toJson("None"), Json.toJson("None"), Json.toJson(List("200 (OK) if the operation proceeded successfully", "500 (Internal Server Error) if an error occurred on the server"))),
       RouteInformations("Shows informations about the authenticated user (his username, the number of trashes he owns and the total waste volume that are in his trashes)", "/api/user", "GET", "Authorization: Basic <access_token>", Json.toJson("None"), Json.toJson("None"), Json.toJson("None"), Json.toJson(List("200 (OK) if the operation proceeded successfully", "400 (Bad Request) if the authentication token wasn't provided", "403 (Forbidden) if the authentication token is invalid or has expired", "500 (Internal Server Error) if an error occurred on the server"))),
