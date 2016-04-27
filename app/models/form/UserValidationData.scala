@@ -5,4 +5,4 @@ package models.form
   * @param username the username
   * @param password the password
   */
-case class UserLoginData(username: String, password: String)
+case class UserValidationData(username: String, password: String)

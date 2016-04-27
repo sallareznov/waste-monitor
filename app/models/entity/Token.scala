@@ -14,8 +14,6 @@ case class Token(text: String, userId: Long, expirationDelay: Option[Date])
 
 object Token {
 
-  implicit val tokenReads = Json.reads[Token]
-  implicit val tokenWrites = Json.writes[Token]
   implicit val tokenFormat = Json.format[Token]
 
 }
