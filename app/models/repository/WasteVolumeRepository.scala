@@ -40,7 +40,7 @@ class WasteVolumeRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(
     * inserts a new record
     * @param userId the id of the user
     * @param volume his total waste volume
-    * @return the inserted waste volume encapsulated in a [[Future]] object
+    * @return the inserted waste volume encapsulated in a [[scala.concurrent.Future]] object
     */
   def record(userId: Long, volume: Int): Future[WasteVolume] = {
     dbConfig.db.run {
@@ -54,7 +54,7 @@ class WasteVolumeRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(
   /**
     * retrieves all the waste volumes over time from a user
     * @param userId the id of the user
-    * @return all the waste volumes over time from a user, encapsulated in a [[Future]] object
+    * @return all the waste volumes over time from a user, encapsulated in a [[scala.concurrent.Future]] object
     */
   def getWasteVolumesFromUser(userId: Long): Future[Seq[WasteVolume]] = {
     dbConfig.db.run(wasteVolumes.filter(_.userId === userId).sortBy(_.recordDate).result)

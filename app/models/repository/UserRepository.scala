@@ -40,7 +40,7 @@ class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implici
     * inserts a new user
     * @param username the username
     * @param password the password
-    * @return encapsulated in a [[Future]] object
+    * @return encapsulated in a [[scala.concurrent.Future]] object
     */
   def createUser(username: String, password: String): Future[Option[Long]] = {
     val entity = User(None, username, password.bcrypt)
@@ -50,7 +50,7 @@ class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implici
   /**
     * retrieves a user by his id
     * @param userId the id of the user
-    * @return the user option encapsulated in a [[Future]] object
+    * @return the user option encapsulated in a [[scala.concurrent.Future]] object
     */
   def getById(userId: Long): Future[Option[User]] = {
     dbConfig.db.run(users.filter(_.id === userId).result.headOption)
@@ -59,7 +59,7 @@ class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implici
   /**
     * retrieves a user by his username
     * @param username the username
-    * @return the user option encapsulated in a [[Future]] object
+    * @return the user option encapsulated in a [[scala.concurrent.Future]] object
     */
   def getByUsername(username: String): Future[Option[User]] = {
     dbConfig.db.run(users.filter(_.username === username).result.headOption)
@@ -69,7 +69,7 @@ class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implici
     * retrieves a user by his username and his password
     * @param username the username
     * @param password the password
-    * @return the user option encapsulated in a [[Future]] object
+    * @return the user option encapsulated in a [[scala.concurrent.Future]] object
     */
   def getByUsernameAndPassword(username: String, password: String): Future[Option[User]] = {
     dbConfig.db.run(users.filter(user => user.username === username && user.hash === password.bcrypt).result.headOption)

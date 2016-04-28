@@ -91,6 +91,10 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
       //val userResult = request.body.validate[UserValidationData]
       val username = (request.body \ "username").as[String]
       val password = (request.body \ "password").as[String]
+      /*for {
+        userOption <- userRepository.getByUsernameAndPassword(username, password)
+        tokenOption <- tokenRepository.getTokenForUserId(userId)
+      }*/
       userRepository.getByUsernameAndPassword(username, password).flatMap {
         case Some(user) => user.id match {
           case Some(userId) =>
@@ -124,12 +128,14 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     */
   def currentUser(): Action[AnyContent] = {
     def futureResult(token: Token, request: Request[AnyContent]): Future[Result] = {
-      userRepository.getById(token.userId).flatMap {
-        case Some(user) => trashRepository.getTrashesForUserId(token.userId).map(trashes => {
+      for {
+        userOption <- userRepository.getById(token.userId)
+        trashes <- trashRepository.getTrashesForUserId(token.userId)
+      } yield userOption match {
+        case Some(user) =>
           val totalWasteVolume = trashes.foldLeft(0)((r, c) => r + c.volume)
           Ok(Json.toJson(UserInformations(user.username, token.text, trashes.length, totalWasteVolume)))
-        })
-        case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
+        case None => InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
       }
     }
     actionWithAuthorization(futureResult)
@@ -155,16 +161,18 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         403 (Forbidden) if the authentication token is invalid or has expired
     *         500 (Internal Server Error) if an error occurred on the server
     */
-  def createTrash(trashVolume: Int): Action[AnyContent] = {
+  /*def createTrash(trashVolume: Int): Action[AnyContent] = {
     def futureResult(token: Token, request: Request[AnyContent]): Future[Result] = {
-      trashRepository.createTrash(token.userId, trashVolume).flatMap(
-        trash => trashRepository.getTotalWasteVolume(trash.userId).flatMap {
-          case Some(wasteVolume) => wasteVolumeRepository.record(trash.userId, wasteVolume).map(_ => Created(Json.toJson(trash)))
-          case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
-        })
+      for {
+        trash <- trashRepository.createTrash(token.userId, trashVolume)
+        wasteVolumeOption <- trashRepository.getTotalWasteVolume(trash.userId)
+      } yield wasteVolumeOption match {
+        case Some(wasteVolume) => Future.successful()//wasteVolumeRepository.record(trash.userId, wasteVolume).map(_ => Created(Json.obj("message" -> "The trash has been successfully created", "trash" -> Json.toJson(trash))))
+        case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
+      }
     }
     actionWithAuthorization(futureResult)
-  }
+  }*/
 
 
   /**
@@ -230,7 +238,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
   def deleteTrash(trashId: Long): Action[AnyContent] = {
     def futureResult(token: Token, request: Request[AnyContent]): Future[Result] = {
       trashRepository.deleteTrash(trashId).map {
-        case 1 => Ok(Json.obj("message" -> "the trash has been successfully deleted", "trashId" -> trashId))
+        case 1 => NoContent
         case _ => NotFound(Json.obj("message" -> ("the trash with the id " + trashId + " doesn't exist")))
       }
     }

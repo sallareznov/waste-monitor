@@ -41,7 +41,7 @@ class TokenRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
     * @param userId the id of the user
     * @param username the username
     * @param password the password
-    * @return the inserted token encapsulated in a [[Future]] object
+    * @return the inserted token encapsulated in a [[scala.concurrent.Future]] object
     */
   def addToken(userId: Long, username: String, password: String): Future[Token] = {
     val tokenText = Base64.encodeBase64String((username + ':' + password).getBytes)
@@ -56,7 +56,7 @@ class TokenRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
   /**
     * Retrieves a token by its text
     * @param tokenText the text of the token
-    * @return the token option encapsulated in a [[Future]] object
+    * @return the token option encapsulated in a [[scala.concurrent.Future]] object
     */
   def getToken(tokenText: String): Future[Option[Token]] = {
     dbConfig.db.run(tokens.filter(_.text === tokenText).result.headOption)
@@ -65,7 +65,7 @@ class TokenRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
   /**
     * Retrieves a token by the id of its user
     * @param userId the id of the user
-    * @return the token option encapsulated in a [[Future]] object
+    * @return the token option encapsulated in a [[scala.concurrent.Future]] object
     */
   def getTokenForUserId(userId: Long): Future[Option[Token]] = {
     dbConfig.db.run(tokens.filter(_.userId === userId).result.headOption)

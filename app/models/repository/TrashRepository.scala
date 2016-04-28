@@ -39,7 +39,7 @@ class TrashRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
   /**
     * lists the trashes owned by a user
     * @param userId the id of the user
-    * @return the list of trashes owned by the user, encapsulated in a [[Future]] object
+    * @return the list of trashes owned by the user, encapsulated in a [[scala.concurrent.Future]] object
     */
   def listTrashes(userId: Long): Future[Seq[Trash]] = {
     dbConfig.db.run(trashes.filter(_.userId === userId).result)
@@ -49,7 +49,7 @@ class TrashRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
     * inserts a new trash
     * @param userId the id of the user
     * @param volume the volume of the trash
-    * @return the inserted trash encapsulated in a [[Future]] object
+    * @return the inserted trash encapsulated in a [[scala.concurrent.Future]] object
     */
   def createTrash(userId: Long, volume: Int): Future[Trash] = {
     dbConfig.db.run {
