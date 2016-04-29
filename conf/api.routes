@@ -1,8 +1,8 @@
-GET           /                                 controllers.api.ApiController.index()
-POST          /register                         controllers.api.ApiController.register()
-POST          /login                            controllers.api.ApiController.login()
-GET           /users                            controllers.api.ApiController.listUsers()
-#GET           /user                             controllers.api.ApiController.currentUser()
+GET         /                             controllers.api.ApiController.index()
+POST        /register                     controllers.api.ApiController.register()
+POST        /login                        controllers.api.ApiController.login()
+GET         /users                        controllers.api.ApiController.listUsers()
+GET         /user                         controllers.api.ApiController.currentUser()
 #PUT           /user/createTrash                 controllers.api.ApiController.createTrash(volume: Int)
 #GET           /user/trashes                     controllers.api.ApiController.listTrashes()
 #GET           /user/trash/:trashId              controllers.api.ApiController.trash(trashId: Long)
@@ -10,3 +10,12 @@ GET           /users                            controllers.api.ApiController.li
 #POST          /user/fillTrash/:trashId          controllers.api.ApiController.changeEmptiness(trashId: Long, empty: Boolean = false)
 #DELETE        /user/deleteTrash/:trashId        controllers.api.ApiController.deleteTrash(trashId: Long)
 #GET           /user/evolution                   controllers.api.ApiController.evolution()
+
+###
+# summary: swagger definition
+# description: for swagger UI to consume
+###
+GET         /docs/swagger.json            @controllers.api.ApiSpecs.specs
+
+### NoDocs ###
+GET         /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
