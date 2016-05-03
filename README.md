@@ -92,7 +92,7 @@ Waste Monitor is a RESTful web service enabling the user to monitor the evolutio
   {
     "description": "Creates a new trash for the authenticated user",
     "route": "/api/user/createTrash",
-    "verb": "PUT",
+    "verb": "POST",
     "headers": "Authorization: Basic <access_token>",
     "urlParameters": "None",
     "queryParameters": {
@@ -126,7 +126,7 @@ Waste Monitor is a RESTful web service enabling the user to monitor the evolutio
   {
     "description": "Empties the specified trash",
     "route": "/api/user/emptyTrash",
-    "verb": "POST",
+    "verb": "PUT",
     "headers": "Authorization: Basic <access_token>",
     "urlParameters": {
       "trashId": "the identifier of the trash"
@@ -145,7 +145,7 @@ Waste Monitor is a RESTful web service enabling the user to monitor the evolutio
   {
     "description": "Fills the specified trash",
     "route": "/api/user/fillTrash",
-    "verb": "POST",
+    "verb": "PUT",
     "headers": "Authorization: Basic <access_token>",
     "urlParameters": {
       "trashId": "the identifier of the trash"
