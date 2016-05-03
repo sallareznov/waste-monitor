@@ -13,4 +13,5 @@ case class UserValidationData(username: String, password: String)
 object UserValidationData {
 
   implicit val userValidationDataFormat = Json.format[UserValidationData]
+
 }

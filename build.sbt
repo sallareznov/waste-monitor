@@ -5,10 +5,10 @@ sbtVersion := "0.13.11"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-// The Typesafe repository
 resolvers ++= Seq(
   "Typesafe repository" at "https://dl.bintray.com/typesafe/maven-releases/",
-  Resolver.jcenterRepo
+  Resolver.jcenterRepo,
+  "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 )
 
 libraryDependencies ++= Seq(
@@ -22,5 +22,7 @@ libraryDependencies ++= Seq(
   "com.github.wookietreiber" % "scala-chart_2.11" % "0.5.0",
   "org.jfree" % "jfreechart" % "1.0.19",
   "com.iheart" %% "play-swagger" % "0.2.5-PLAY2.5",
-  "org.webjars" % "swagger-ui" % "2.1.4"
+  "org.webjars" % "swagger-ui" % "2.1.4",
+  "io.kanaka" %% "play-monadic-actions" % "1.1.0"
+  //"org.scalaz" % "scalaz-core_2.11" % "7.1.0"
 )

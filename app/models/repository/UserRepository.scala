@@ -61,6 +61,10 @@ class UserRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implici
     * @param username the username
     * @return the user option encapsulated in a [[scala.concurrent.Future]] object
     */
+  def usernameDoesntExists(username: String): Future[Boolean] = {
+    dbConfig.db.run(users.filter(_.username === username).exists.result)
+  }
+
   def getByUsername(username: String): Future[Option[User]] = {
     dbConfig.db.run(users.filter(_.username === username).result.headOption)
   }

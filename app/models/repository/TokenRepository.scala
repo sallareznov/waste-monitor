@@ -62,6 +62,10 @@ class TokenRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
     dbConfig.db.run(tokens.filter(_.text === tokenText).result.headOption)
   }
 
+  def tokenDoesntExist(userId: Long): Future[Boolean] = {
+    dbConfig.db.run(tokens.filter(_.userId === userId).exists.result)
+  }
+
   /**
     * Retrieves a token by the id of its user
     * @param userId the id of the user
