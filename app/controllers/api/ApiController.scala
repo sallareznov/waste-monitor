@@ -141,18 +141,16 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         403 (Forbidden) if the authentication token is invalid or has expired
     *         500 (Internal Server Error) if an error occurred on the server
     */
-  /*def createTrash(trashVolume: Int): Action[AnyContent] = {
-    def futureResult(token: Token, request: Request[AnyContent]): Future[Result] = {
+  def createTrash(trashVolume: Int): Action[AnyContent] = {
+    def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
       for {
-        trash <- trashRepository.createTrash(token.userId, trashVolume)
-        wasteVolumeOption <- trashRepository.getTotalWasteVolume(trash.userId)
-      } yield wasteVolumeOption match {
-        case Some(wasteVolume) => Future.successful()//wasteVolumeRepository.record(trash.userId, wasteVolume).map(_ => Created(Json.obj("message" -> "The trash has been successfully created", "trash" -> Json.toJson(trash))))
-        case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
-      }
+        trash <- trashRepository.createTrash(token.userId, trashVolume) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+        totalWasteVolume <- trashRepository.getTotalWasteVolume(trash.userId) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+        _ <- wasteVolumeRepository.record(trash.userId, totalWasteVolume) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+      } yield Created(Json.obj("message" -> "The trash has been successfully created", "trash" -> Json.toJson(trash)))
     }
     actionWithAuthorization(futureResult)
-  }*/
+  }
 
 
   /**
@@ -165,7 +163,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         500 (Internal Server Error) if an error occurred on the server
     */
   /*def trash(trashId: Long): Action[AnyContent] = {
-    def futureResult(token: Token, request: Request[AnyContent]): Future[Result] = {
+    def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
       trashRepository.getTrash(trashId).map {
         case Some(trash) => Ok(Json.toJson(trash))
         case None => NotFound(Json.obj("message" -> ("The trash with the id " + trashId + " doesn't exist"), "trashesUrl" -> ("http://" + request.host + "/api/user/trashes")))
@@ -187,7 +185,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         500 (Internal Server Error) if an error occurred on the server
     */
   /*def changeEmptiness(trashId: Long, empty: Boolean): Action[AnyContent] = {
-    def futureResult(token: Token, request: Request[AnyContent]): Future[Result] = {
+    def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
       trashRepository.getTrash(trashId).flatMap {
         case Some(trash) =>
           trash.empty match {
@@ -216,7 +214,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         500 (Internal Server Error) if an error occurred on the server
     */
   /*def deleteTrash(trashId: Long): Action[AnyContent] = {
-    def futureResult(token: Token, request: Request[AnyContent]): Future[Result] = {
+    def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
       trashRepository.deleteTrash(trashId).map {
         case 1 => NoContent
         case _ => NotFound(Json.obj("message" -> ("the trash with the id " + trashId + " doesn't exist")))
@@ -234,7 +232,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         500 (Internal Server Error) if an error occurred on the server
     */
   /*def evolution(): Action[AnyContent] = {
-    def futureResult(token: Token, request: Request[AnyContent]): Future[Result] = {
+    def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
       wasteVolumeRepository.getWasteVolumesFromUser(token.userId).map(wasteVolumes => Ok(Json.toJson(wasteVolumes)))
     }
     actionWithAuthorization(futureResult)
