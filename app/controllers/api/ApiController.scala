@@ -186,13 +186,15 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         500 (Internal Server Error) if an error occurred on the server
     */
   def changeEmptiness(trashId: Long, empty: Boolean): Action[AnyContent] = {
-    for {
-      trash <- trashRepository.getTrash(trashId) ?| NotFound(Json.obj("message" -> ("The trash with the id " + trashId + " doesn't exist"), "trashesUrl" -> ("http://" + request.host + "/api/user/trashes")))
-      updatedRows <- trashRepository.changeEmptiness(trashId, empty) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
-      totalWasteVolume <- trashRepository.getTotalWasteVolume(trash.userId) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
-      record <- wasteVolumeRepository.record(trashId, wasteVolume) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
-      updatedTrash <- trashRepository.getTrash(trashId) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
-    } yield Ok(Json.toJson(updatedTrash))
+    def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
+      for {
+        trash <- trashRepository.getTrash(trashId) ?| NotFound(Json.obj("message" -> ("The trash with the id " + trashId + " doesn't exist"), "trashesUrl" -> ("http://" + request.host + "/api/user/trashes")))
+        updatedRows <- trashRepository.changeEmptiness(trashId, empty) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+        totalWasteVolume <- trashRepository.getTotalWasteVolume(trash.userId) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+        record <- wasteVolumeRepository.record(trashId, totalWasteVolume) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+        updatedTrash <- trashRepository.getTrash(trashId) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+      } yield Ok(Json.toJson(updatedTrash))
+    }
     actionWithAuthorization(futureResult)
   }
 
