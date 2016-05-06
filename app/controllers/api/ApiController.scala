@@ -43,7 +43,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     * @param futureResult the future result if the authentication token is valid
     * @return
     */
-  def actionWithAuthorization(futureResult: (Token, Request[AnyContent]) => scalaz.EitherT[scala.concurrent.Future,play.api.mvc.Result,play.api.mvc.Result]) = Action.async {
+  def actionWithAuthorization(futureResult: (Token, Request[AnyContent]) => scalaz.EitherT[scala.concurrent.Future, play.api.mvc.Result, play.api.mvc.Result]) = Action.async {
     implicit request =>
       for {
         authorizationHeader <- request.headers.get("Authorization") ?| Forbidden(Json.toJson(ErrorJSONMessage("Requires authentication")))
@@ -125,12 +125,14 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *
     * @return
     */
-  /*def listTrashes(): Action[AnyContent] = {
-    def futureResult(token: Token, request: Request[AnyContent]): Future[Result] = {
-      trashRepository.listTrashes(token.userId).map(trashes => Ok(Json.toJson(trashes)))
+  def listTrashes(): Action[AnyContent] = {
+    def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
+      for {
+        trashes <- trashRepository.listTrashes(token.userId) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+      } yield Ok(Json.toJson(trashes))
     }
     actionWithAuthorization(futureResult)
-  }*/
+  }
 
   /**
     * Creates a new trash for the authenticated user
@@ -162,18 +164,17 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         403 (Forbidden) if the authentication token is invalid or has expired
     *         500 (Internal Server Error) if an error occurred on the server
     */
-  /*def trash(trashId: Long): Action[AnyContent] = {
+  def trash(trashId: Long): Action[AnyContent] = {
     def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
-      trashRepository.getTrash(trashId).map {
-        case Some(trash) => Ok(Json.toJson(trash))
-        case None => NotFound(Json.obj("message" -> ("The trash with the id " + trashId + " doesn't exist"), "trashesUrl" -> ("http://" + request.host + "/api/user/trashes")))
-      }
+      for {
+        trash <- trashRepository.getTrash(trashId) ?| NotFound(Json.obj("message" -> ("The trash with the id " + trashId + " doesn't exist"), "trashesUrl" -> ("http://" + request.host + "/api/user/trashes")))
+      } yield Ok(Json.toJson(trash))
     }
     actionWithAuthorization(futureResult)
-  }*/
+  }
 
   /**
-    * Empties the specified trash
+    * Empties the specified trashs
     *
     * @param trashId the id of the trash
     * @param empty   <code>true</code> if the trash will be emptied, <code>false</code> if it will be filled
@@ -184,24 +185,16 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         409 (Conflict) if the trash is already empty
     *         500 (Internal Server Error) if an error occurred on the server
     */
-  /*def changeEmptiness(trashId: Long, empty: Boolean): Action[AnyContent] = {
-    def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
-      trashRepository.getTrash(trashId).flatMap {
-        case Some(trash) =>
-          trash.empty match {
-            case x if x != empty => trashRepository.changeEmptiness(trashId, empty).flatMap {
-              _ => trashRepository.getTotalWasteVolume(trash.userId).flatMap {
-                case Some(wasteVolume) => wasteVolumeRepository.record(trashId, wasteVolume).flatMap(_ => trashRepository.getTrash(trashId).map(updatedTrash => Ok(Json.toJson(updatedTrash))))
-                case None => Future.successful(InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error"))))
-              }
-            }
-            case _ => Future.successful(Conflict(Json.toJson(ErrorJSONMessage("This trash is already " + (if (empty) "empty" else "filled")))))
-          }
-        case None => Future.successful(NotFound(Json.obj("message" -> ("The trash with the id " + trashId + " doesn't exist"), "trashesUrl" -> ("http://" + request.host + "/api/user/trashes"))))
-      }
-    }
+  def changeEmptiness(trashId: Long, empty: Boolean): Action[AnyContent] = {
+    for {
+      trash <- trashRepository.getTrash(trashId) ?| NotFound(Json.obj("message" -> ("The trash with the id " + trashId + " doesn't exist"), "trashesUrl" -> ("http://" + request.host + "/api/user/trashes")))
+      updatedRows <- trashRepository.changeEmptiness(trashId, empty) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+      totalWasteVolume <- trashRepository.getTotalWasteVolume(trash.userId) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+      record <- wasteVolumeRepository.record(trashId, wasteVolume) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+      updatedTrash <- trashRepository.getTrash(trashId) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+    } yield Ok(Json.toJson(updatedTrash))
     actionWithAuthorization(futureResult)
-  }*/
+  }
 
   /**
     * Deletes the specified trash owned by the authenticated user
@@ -213,15 +206,14 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         404 (Not Found) if the trash with the specified id doesn't exist
     *         500 (Internal Server Error) if an error occurred on the server
     */
-  /*def deleteTrash(trashId: Long): Action[AnyContent] = {
+  def deleteTrash(trashId: Long): Action[AnyContent] = {
     def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
-      trashRepository.deleteTrash(trashId).map {
-        case 1 => NoContent
-        case _ => NotFound(Json.obj("message" -> ("the trash with the id " + trashId + " doesn't exist")))
-      }
+      for {
+        deleted <- trashRepository.deleteTrash(trashId) ?| NotFound(Json.obj("message" -> ("the trash with the id " + trashId + " doesn't exist")))
+      } yield NoContent
     }
     actionWithAuthorization(futureResult)
-  }*/
+  }
 
   /**
     * Shows informations about the evolution of the authenticated user's waste
@@ -231,13 +223,14 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         403 (Forbidden) if the authentication token is invalid or has expired
     *         500 (Internal Server Error) if an error occurred on the server
     */
-  /*def evolution(): Action[AnyContent] = {
+  def evolution(): Action[AnyContent] = {
     def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
-      wasteVolumeRepository.getWasteVolumesFromUser(token.userId).map(wasteVolumes => Ok(Json.toJson(wasteVolumes)))
+      for {
+        wasteVolumes <- wasteVolumeRepository.getWasteVolumesFromUser(token.userId) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
+      } yield Ok(Json.toJson(wasteVolumes))
     }
     actionWithAuthorization(futureResult)
-  }*/
-
+  }
 
   def generateChart() = TODO
 

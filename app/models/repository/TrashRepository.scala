@@ -74,8 +74,8 @@ class TrashRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(implic
     * @param trashId the id of the trash
     * @return encapsulated in a [[Future]] object, <code>1</code> if one row has been deleted, <code>0</code> otherwise
     */
-  def deleteTrash(trashId: Long): Future[Int] = {
-    dbConfig.db.run(trashes.filter(_.id === trashId).delete)
+  def deleteTrash(trashId: Long): Future[Boolean] = {
+    dbConfig.db.run(trashes.filter(_.id === trashId).delete.map(result => result != 0))
   }
 
   /**
