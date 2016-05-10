@@ -5,7 +5,7 @@ import javax.inject.Inject
 import controllers.ActionDSL.MonadicActions
 import models.entity.Token
 import models.form.UserValidationData
-import models.message.{ErrorJSONMessage, RouteInformations, UserInformations}
+import models.message.{ErrorJSONMessage, UserInformations}
 import models.repository.{TokenRepository, TrashRepository, UserRepository, WasteVolumeRepository}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
@@ -22,7 +22,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     * @return 200 (OK) if the operation proceeded successfully
     *         500 (Internal Server Error) if an error occurred on the server
     */
-  def index() = Action {
+  /*def index2() = Action {
     Ok(Json.toJson(List(RouteInformations("Attempts to register a new user", "/api/register", "POST", "None", Json.toJson("None"), Json.toJson("None"), Json.obj("username" -> "johndoe", "password" -> "johndoe"), Json.toJson(List("201 (Created) if the operation proceeded successfully and the user was created", "409 (Conflict) if a user with the same username already exists", "500 (Internal Server Error) if an error occurred on the server"))),
       RouteInformations("Attempts to log a user", "/api/login", "POST", "None", Json.toJson("None"), Json.toJson("None"), Json.obj("username" -> "johndoe", "password" -> "johndoe"), Json.toJson(List("200 (OK) if the operation proceeded successfully", "401 (Unauthorized) if the credentials are invalid", "500 (Internal Server Error) if an error occurred on the server"))),
       RouteInformations("Lists the registered users", "/api/users", "GET", "None", Json.toJson("None"), Json.toJson("None"), Json.toJson("None"), Json.toJson(List("200 (OK) if the operation proceeded successfully", "500 (Internal Server Error) if an error occurred on the server"))),
@@ -35,6 +35,15 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
       RouteInformations("Deletes the specified trash owned by the authenticated user", "/api/user/deleteTrash", "DELETE", "Authorization: Basic <access_token>", Json.obj("trashId" -> "the identifier of the trash"), Json.toJson("None"), Json.toJson("None"), Json.toJson(List("200 (OK) if the operation proceeded successfully", "400 (Bad Request) if the authentication token wasn't provided", "403 (Forbidden) if the authentication token is invalid or has expired", "404 (Not Found) if the trash with the specified id doesn't exist", "500 (Internal Server Error) if an error occurred on the server"))),
       RouteInformations("Shows informations about the evolution of the authenticated user's waste", "/api/user/evolution", "GET", "Authorization: Basic <access_token>", Json.toJson("None"), Json.toJson("None"), Json.toJson("None"), Json.toJson(List("200 (OK) if the operation proceeded successfully", "400 (Bad Request) if the authentication token wasn't provided", "403 (Forbidden) if the authentication token is invalid or has expired", "500 (Internal Server Error) if an error occurred on the server")))
     )))
+  }*/
+
+  def index() = Action {
+    Ok(Json.obj("users" -> "/api/users",
+      "user" -> "/api/user",
+      "trashes" -> "/api/user/trashes",
+      "trash" -> "api/user/trash",
+      "wasteVolume" -> "/api/user/wasteVolume"
+    ))
   }
 
   /**
@@ -71,26 +80,6 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
   }
 
   /**
-    * Attempts to log the user
-    *
-    * @return 200 (OK) if the operation proceeded successfully
-    *         401 (Unauthorized) if the credentials are invalid
-    *         500 (Internal Server Error) if an error occurred on the server
-    */
-  /*def login() = Action.async(parse.json) {
-    implicit request =>
-      for {
-        user <- request.body.validate[UserValidationData] ?| /*BadRequest(JsError.toJson(_ : ActionDSL.JsErrorContent))*/ InternalServerError
-        loggedInUser <- userRepository.getByUsernameAndPassword(user.username, user.password) ?| Unauthorized(Json.toJson(ErrorJSONMessage("Bad credentials")))
-        loggedInUserId <- loggedInUser.id ?| InternalServerError
-        tokenDoesntExist <- tokenRepository.tokenDoesntExist(loggedInUserId)
-      } yield tokenRepository.getTokenForUserId(loggedInUserId).flatMap {
-        case Some(token) => Ok(token)
-        case None => tokenRepository.addToken(loggedInUserId, user.username, user.password).map(token => Ok)
-      }
-  }*/
-
-  /**
     * Lists the registered users
     *
     * @return 200 (OK) if the operation proceeded successfully
@@ -108,7 +97,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         403 (Forbidden) if the authentication token is invalid or has expired
     *         500 (Internal Server Error) if an error occurred on the server
     */
-  def currentUser(): Action[AnyContent] = {
+  def user(): Action[AnyContent] = {
     def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
       for {
         user <- userRepository.getById(token.userId) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
@@ -225,7 +214,7 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
     *         403 (Forbidden) if the authentication token is invalid or has expired
     *         500 (Internal Server Error) if an error occurred on the server
     */
-  def evolution(): Action[AnyContent] = {
+  def wasteVolume(): Action[AnyContent] = {
     def futureResult(token: Token, request: Request[AnyContent]): EitherT[Future, Result, Result] = {
       for {
         wasteVolumes <- wasteVolumeRepository.getWasteVolumesFromUser(token.userId) ?| InternalServerError(Json.toJson(ErrorJSONMessage("Internal server error")))
@@ -235,5 +224,29 @@ class ApiController @Inject()(userRepository: UserRepository, tokenRepository: T
   }
 
   def generateChart() = TODO
+
+  def indexOptions() = Action {
+    implicit request => NoContent.withHeaders("Allow" -> "GET")
+  }
+
+  def usersOptions() = Action {
+    implicit request => NoContent.withHeaders("Allow" -> "GET, POST")
+  }
+
+  def userOptions() = Action {
+    implicit request => NoContent.withHeaders("Allow" -> "GET")
+  }
+
+  def trashesOptions() = Action {
+    implicit request => NoContent.withHeaders("Allow" -> "GET, POST")
+  }
+
+  def trashOptions() = Action {
+    implicit request => NoContent.withHeaders("Allow" -> "GET, PUT, DELETE")
+  }
+
+  def wasteVolumeOptions() = Action {
+    implicit request => NoContent.withHeaders("Allow" -> "GET")
+  }
 
 }

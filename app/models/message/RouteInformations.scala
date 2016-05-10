@@ -11,7 +11,7 @@ import play.api.libs.json.{JsValue, Json}
   * @param urlParameters the parameters in the path
   * @param body the body
   */
-case class RouteInformations(description: String, route: String, verb: String, headers: String, urlParameters: JsValue, queryParameters: JsValue, body: JsValue, returnCodes: JsValue)
+case class RouteInformations(description: String, route: String, verb: String, headers: Map[String, String], urlParameters: JsValue, queryParameters: JsValue, body: JsValue, returnCodes: JsValue)
 
 object RouteInformations {
 

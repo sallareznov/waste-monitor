@@ -14,7 +14,7 @@ Waste Monitor is a RESTful web service enabling the user to monitor the evolutio
 [
   {
     "description": "Attempts to register a new user",
-    "route": "/api/register",
+    "route": "/api/users",
     "verb": "POST",
     "headers": "None",
     "urlParameters": "None",
@@ -26,23 +26,6 @@ Waste Monitor is a RESTful web service enabling the user to monitor the evolutio
     "returnCodes": [
       "201 (Created) if the operation proceeded successfully and the user was created",
       "409 (Conflict) if a user with the same username already exists",
-      "500 (Internal Server Error) if an error occurred on the server"
-    ]
-  },
-  {
-    "description": "Attempts to log a user",
-    "route": "/api/login",
-    "verb": "POST",
-    "headers": "None",
-    "urlParameters": "None",
-    "queryParameters": "None",
-    "body": {
-      "username": "johndoe",
-      "password": "johndoe"
-    },
-    "returnCodes": [
-      "200 (OK) if the operation proceeded successfully",
-      "401 (Unauthorized) if the credentials are invalid",
       "500 (Internal Server Error) if an error occurred on the server"
     ]
   },
@@ -91,7 +74,7 @@ Waste Monitor is a RESTful web service enabling the user to monitor the evolutio
   },
   {
     "description": "Creates a new trash for the authenticated user",
-    "route": "/api/user/createTrash",
+    "route": "/api/user/trash",
     "verb": "POST",
     "headers": "Authorization: Basic <access_token>",
     "urlParameters": "None",
@@ -124,15 +107,17 @@ Waste Monitor is a RESTful web service enabling the user to monitor the evolutio
     ]
   },
   {
-    "description": "Empties the specified trash",
-    "route": "/api/user/emptyTrash",
+    "description": "Changes the emptiness of the specified trash",
+    "route": "/api/user/trash",
     "verb": "PUT",
     "headers": "Authorization: Basic <access_token>",
     "urlParameters": {
       "trashId": "the identifier of the trash"
     },
     "queryParameters": "None",
-    "body": "None",
+    "body": {
+      "empty": true || false
+    },
     "returnCodes": [
       "200 (OK) if the operation proceeded successfully",
       "400 (Bad Request) if the authentication token wasn't provided",
@@ -163,7 +148,7 @@ Waste Monitor is a RESTful web service enabling the user to monitor the evolutio
   },
   {
     "description": "Deletes the specified trash owned by the authenticated user",
-    "route": "/api/user/deleteTrash",
+    "route": "/api/user/trash",
     "verb": "DELETE",
     "headers": "Authorization: Basic <access_token>",
     "urlParameters": {
@@ -181,7 +166,7 @@ Waste Monitor is a RESTful web service enabling the user to monitor the evolutio
   },
   {
     "description": "Shows informations about the evolution of the authenticated user's waste",
-    "route": "/api/user/evolution",
+    "route": "/api/user/wasteVolume",
     "verb": "GET",
     "headers": "Authorization: Basic <access_token>",
     "urlParameters": "None",
