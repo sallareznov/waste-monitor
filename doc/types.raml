@@ -1,0 +1,32 @@
+UserPost:
+  description: A user (credentials)
+  type: object
+  properties:
+    username: string
+    password: string
+UsersGet:
+  description: The list of users
+  type: array
+  items:
+    type: object
+    properties:
+      id: integer
+      username: string
+      hash: string
+UserGet:
+  description: The list of users
+  type: array
+  items:
+    type: object
+    properties:
+      username: string
+      token: string
+      nbTrashes: integer
+      totalWasteVolume: integer
+UserTrashGet:
+  description: A trash
+  type: object
+  properties:
+    userId: string
+    volume: integer
+    empty: boolean

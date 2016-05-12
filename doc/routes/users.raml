@@ -1,0 +1,28 @@
+get:
+  description: Retrieves the list of users
+  responses:
+    200:
+      description: if the operation proceeded successfully
+      body:
+        application/json:
+          type: UsersGet
+          example: |
+            [
+              {
+                "id": 1,
+                "username": "johndoe",
+                "hash": "$2a$10$zEbf0iC57NBGbcn4Y25sVufN.OJS5NqC3k7kX3Xd4l6HaN1n.UYYq"
+              }
+            ]
+    500:
+      description: if an error occured on the server
+post:
+  description: Attemps to register a new user
+  body:
+    application/json:
+      type: UserPost
+      example: |
+        {
+          "username" : "sallareznov",
+          "password" : "sallareznov"
+        }

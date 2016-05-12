@@ -1,0 +1,23 @@
+#%RAML 1.0
+title: waste-monitor
+description: An API for monitoring waste evolution
+baseUri: http://localhost:9000
+version: v1
+protocols: HTTP
+mediaType: application/json
+securitySchemes:
+  basic:
+    type: Basic Authentication
+securedBy: basic
+traits:
+  secured:
+    usage: When a method needs authentication
+    description: Requires Authorization header
+    headers:
+      Authorization:
+        description: Used to send a valid access token
+        type: string
+        example: Authorization am9obmRvZTpqb2huZG9l
+types: !include types.raml
+/users: !include routes/users.raml
+/user: !include routes/user.raml
